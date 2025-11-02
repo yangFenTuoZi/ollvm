@@ -34,14 +34,12 @@ jobs:
           echo "Selected LLVM branch: $LLVM_BRANCH, NDK: $NDK_VERSION"
 
       - name: Checkout LLVM branch
-        run: git checkout $LLVM_BRANCH
+        run: |
+          git checkout $LLVM_BRANCH
+          git submodule update --init --recursive --depth=1
 
       - name: Apply obfuscator patch
         run: git apply ../obfuscator.patch || true
-
-      - name: Show directory tree(for Debug)
-        run: |
-          tree
 
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y cmake ninja-build build-essential mingw-w64 wget unzip zip
