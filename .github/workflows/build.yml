@@ -59,7 +59,7 @@ jobs:
       - name: Build Linux LLVM
         run: |
           mkdir -p build-linux
-          cmake -S llvm -B build-linux \
+          cmake -S llvm-project/llvm -B build-linux \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DLLVM_ENABLE_PROJECTS="clang;lld" \
@@ -70,7 +70,7 @@ jobs:
       - name: Build Windows LLVM (cross)
         run: |
           mkdir -p build-windows
-          cmake -S llvm -B build-windows \
+          cmake -S llvm-project/llvm -B build-windows \
             -G Ninja \
             -DCMAKE_SYSTEM_NAME=Windows \
             -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
