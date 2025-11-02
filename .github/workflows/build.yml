@@ -39,6 +39,14 @@ jobs:
       - name: Apply obfuscator patch
         run: git apply ../obfuscator.patch || true
 
+      - name: Show directory tree(for Debug)
+        run: |
+          echo "===== Repository directory tree (depth 4, max 4 files per folder) ====="
+          find . -maxdepth 4 -type d | while read dir; do
+            echo "$dir/"
+            find "$dir" -maxdepth 1 -mindepth 1 | head -n 4 | sed 's/^/  /'
+          done
+
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y cmake ninja-build build-essential mingw-w64 wget unzip zip
 
@@ -48,13 +56,6 @@ jobs:
           wget -q $NDK_LINUX_URL -O ndk-linux.zip
           unzip -q ndk-linux.zip -d ndk-linux
           echo "NDK_LINUX_HOME=$PWD/ndk-linux/$(ls ndk-linux)" >> $GITHUB_ENV
-
-      - name: Download Windows NDK
-        run: |
-          NDK_WINDOWS_URL="https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-windows.zip"
-          wget -q $NDK_WINDOWS_URL -O ndk-windows.zip
-          unzip -q ndk-windows.zip -d ndk-windows
-          echo "NDK_WINDOWS_HOME=$PWD/ndk-windows/$(ls ndk-windows)" >> $GITHUB_ENV
 
       - name: Build Linux LLVM
         run: |
@@ -66,6 +67,13 @@ jobs:
             -DLLVM_TARGETS_TO_BUILD="X86;ARM"
           cmake --build build-linux --parallel
           cmake --install build-linux --prefix $NDK_LINUX_HOME/toolchains/llvm/prebuilt/linux-x86_64
+
+      - name: Download Windows NDK
+        run: |
+          NDK_WINDOWS_URL="https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-windows.zip"
+          wget -q $NDK_WINDOWS_URL -O ndk-windows.zip
+          unzip -q ndk-windows.zip -d ndk-windows
+          echo "NDK_WINDOWS_HOME=$PWD/ndk-windows/$(ls ndk-windows)" >> $GITHUB_ENV
 
       - name: Build Windows LLVM (cross)
         run: |
