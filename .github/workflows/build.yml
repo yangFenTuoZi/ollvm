@@ -41,11 +41,7 @@ jobs:
 
       - name: Show directory tree(for Debug)
         run: |
-          echo "===== Repository directory tree (depth 4, max 4 files per folder) ====="
-          find . -maxdepth 4 -type d | while read dir; do
-            echo "$dir/"
-            find "$dir" -maxdepth 1 -mindepth 1 | head -n 4 | sed 's/^/  /'
-          done
+          tree
 
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y cmake ninja-build build-essential mingw-w64 wget unzip zip
