@@ -42,7 +42,7 @@ jobs:
         run: git apply ../obfuscator.patch || true
 
       - name: Install dependencies
-        run: sudo apt update && sudo apt install -y cmake ninja-build build-essential mingw-w64 wget unzip zip
+        run: sudo apt update && sudo apt install -y cmake ninja-build build-essential wget unzip zip
 
       - name: Download Linux NDK
         run: |
@@ -50,13 +50,6 @@ jobs:
           wget -q $NDK_LINUX_URL -O ndk-linux.zip
           unzip -q ndk-linux.zip -d ndk-linux
           echo "NDK_LINUX_HOME=$PWD/ndk-linux/$(ls ndk-linux)" >> $GITHUB_ENV
-
-      - name: Download Windows NDK
-        run: |
-          NDK_WINDOWS_URL="https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-windows.zip"
-          wget -q $NDK_WINDOWS_URL -O ndk-windows.zip
-          unzip -q ndk-windows.zip -d ndk-windows
-          echo "NDK_WINDOWS_HOME=$PWD/ndk-windows/$(ls ndk-windows)" >> $GITHUB_ENV
 
       - name: Build Linux LLVM
         run: |
@@ -69,46 +62,17 @@ jobs:
           cmake --build build-linux --parallel
           cmake --install build-linux --prefix $NDK_LINUX_HOME/toolchains/llvm/prebuilt/linux-x86_64
 
-      - name: Build Windows LLVM (cross)
-        run: |
-          mkdir -p build-windows
-          cmake -S llvm-project/llvm -B build-windows \
-            -G Ninja \
-            -DCMAKE_SYSTEM_NAME=Windows \
-            -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
-            -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DLLVM_ENABLE_PROJECTS="clang;lld" \
-            -DLLVM_TARGETS_TO_BUILD="X86;ARM"
-          cmake --build build-windows --parallel
-          cmake --install build-windows --prefix $NDK_WINDOWS_HOME/toolchains/llvm/prebuilt/windows-x86_64
-
       - name: Zip Linux NDK
         run: |
           cd ndk-linux
           zip -r ../ndk-linux.zip .
           cd ..
 
-      - name: Zip Windows NDK
-        run: |
-          cd ndk-windows
-          zip -r ../ndk-windows.zip .
-          cd ..
-
       - name: Split Linux zip if needed
         run: split -b 1900M ndk-linux.zip ndk-linux-part_
-
-      - name: Split Windows zip if needed
-        run: split -b 1900M ndk-windows.zip ndk-windows-part_
 
       - name: Upload Linux NDK chunks
         uses: actions/upload-artifact@v4
         with:
           name: ndk-linux
           path: ndk-linux-part_*
-
-      - name: Upload Windows NDK chunks
-        uses: actions/upload-artifact@v4
-        with:
-          name: ndk-windows
-          path: ndk-windows-part_*
